@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import pool from "./config/database.js";
 
-
+import authRoutes from "./auth/auth.routes.js";
 
 
 const app = express();
@@ -29,4 +29,6 @@ app.listen(PORT, async () => {
         console.log("Database connection failed !", error)
     }
 });
+
+app.use("/api/auth", authRoutes);
 export default app;
