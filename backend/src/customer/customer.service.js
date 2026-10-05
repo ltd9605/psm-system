@@ -32,3 +32,91 @@ export async function deleteCustomer(id) {
     }
     return { message: "Customer deleted successfully" };
 }
+
+export async function addProductToCart(customerId, productId, quantity) {
+    const customer = await getCustomerById(customerId);
+    if (!customer) {
+        throw new Error("Customer not found");
+    }
+
+    if (quantity <= 0) {
+        throw new Error("Quantity must be greater than 0");
+    }
+
+    let cart = await customerRepo.getCartByCustomerId(customerId);
+    let cartId;
+    if (!cart) {
+        cartId = await customerRepo.createCart(customerId);
+    } else {
+        cartId = cart.id;
+    }
+
+    const existingItem = await customerRepo.getCartItem(cartId, productId);
+    
+    if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
+        await customerRepo.updateCartItemQuantity(existingItem.id, newQuantity);
+        return { message: "Cart item quantity updated", cartId, productId, quantity: newQuantity };
+    } else {
+        await customerRepo.addCartItem(cartId, productId, quantity);
+        return { message: "Product added to cart", cartId, productId, quantity };
+    }
+}
+
+export async function getCart(customerId) {
+    const customer = await getCustomerById(customerId);
+    if (!customer) {
+        throw new Error("Customer not found");
+    }
+
+    let cart = await customerRepo.getCartWithItems(customerId);
+    if (!cart) {
+        const cartId = await customerRepo.createCart(customerId);
+        return {
+            id: cartId,
+            customer_id: customerId,
+            items: [],
+            total_amount: 0
+        };
+    }
+
+    cart.total_amount = cart.items.reduce((acc, item) => acc + (Number(item.price) * item.quantity), 0);
+    return cart;
+}
+
+export async function checkout(customerId, data) {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new Error("Customer not found");
+
+    const cart = await customerRepo.getCartWithItems(customerId);
+    if (!cart || !cart.items || cart.items.length === 0) {
+        throw new Error("Cart is empty");
+    }
+
+    const { shipping_address } = data;
+    const orderId = await customerRepo.createOrderFromCart(customer, cart, shipping_address);
+    return { message: "Checkout successful", orderId };
+}
+
+export async function cancelOrder(customerId, orderId) {
+    await customerRepo.cancelCustomerOrder(customerId, orderId);
+    return { message: "Order cancelled successfully" };
+}
+
+export async function getOrders(customerId, status) {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new Error("Customer not found");
+
+    return await customerRepo.getCustomerOrders(customerId, status);
+}
+
+export async function getOrderById(customerId, orderId) {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new Error("Customer not found");
+
+    const order = await customerRepo.getCustomerOrderById(customerId, orderId);
+    if (!order) {
+        throw new Error("Order not found or does not belong to this customer");
+    }
+    return order;
+}
