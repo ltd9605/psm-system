@@ -6,6 +6,7 @@ import authRoutes from "./auth/auth.routes.js";
 import productRoutes from "./product/product.routes.js";
 import customerRoutes from "./customer/customer.routes.js";
 import employeeRoutes from "./employee/employee.routes.js";
+import invoiceRoutes from "./invoice/invoice.routes.js";
 
 const app = express();
 dotenv.config();
@@ -36,5 +37,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 export default app;
