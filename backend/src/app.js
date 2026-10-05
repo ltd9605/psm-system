@@ -3,7 +3,9 @@ import dotenv from "dotenv";
 import pool from "./config/database.js";
 
 import authRoutes from "./auth/auth.routes.js";
-import productRoutes from "./product/product.routes.js"
+import productRoutes from "./product/product.routes.js";
+import customerRoutes from "./customer/customer.routes.js";
+import employeeRoutes from "./employee/employee.routes.js";
 
 const app = express();
 dotenv.config();
@@ -31,5 +33,8 @@ app.listen(PORT, async () => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes)
+app.use("/api/products", productRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/employees", employeeRoutes);
+
 export default app;
