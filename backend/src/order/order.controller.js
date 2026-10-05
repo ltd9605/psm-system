@@ -1,0 +1,50 @@
+import * as orderService from "./order.service.js";
+
+export async function getOrders(req, res) {
+    try {
+        const filters = req.query;
+        const orders = await orderService.getOrders(filters);
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export async function getOrderById(req, res) {
+    try {
+        const { id } = req.params;
+        const order = await orderService.getOrderById(id);
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+}
+
+export async function createOrder(req, res) {
+    try {
+        const order = await orderService.createOrder(req.body);
+        res.status(201).json(order);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export async function updateOrder(req, res) {
+    try {
+        const { id } = req.params;
+        const order = await orderService.updateOrder(id, req.body);
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export async function deleteOrder(req, res) {
+    try {
+        const { id } = req.params;
+        const result = await orderService.deleteOrder(id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
