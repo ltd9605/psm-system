@@ -70,6 +70,17 @@ export async function approveOrder(req, res) {
     }
 }
 
+export async function completeOrder(req, res) {
+    try {
+        const { id } = req.params;
+        const employeeId = req.user.userId;
+        const order = await orderService.updateOrder(id, { status: 'COMPLETED', employee_id: employeeId });
+        res.status(200).json({ message: "Order completed and invoice generated successfully", order });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export async function cancelOrder(req, res) {
     try {
         const { id } = req.params;

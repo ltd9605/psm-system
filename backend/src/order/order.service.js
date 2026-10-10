@@ -1,4 +1,5 @@
 import * as orderRepo from "./order.repository.js";
+import * as invoiceRepo from "../invoice/invoice.repository.js";
 
 export async function getOrders(filters) {
     return await orderRepo.findOrders(filters);
@@ -26,6 +27,8 @@ export async function createOrder(data) {
 }
 
 export async function updateOrder(id, data) {
+    const existingOrder = await getOrderById(id);
+
     if (data.status) {
         // Automatically set timestamps based on status if they are not explicitly provided
         const now = new Date();
@@ -38,6 +41,21 @@ export async function updateOrder(id, data) {
     if (affectedRows === 0) {
         throw new Error("Order not found or no changes made");
     }
+
+    // Automatically generate invoice if status changes to COMPLETED
+    if (data.status === 'COMPLETED' && existingOrder.status !== 'COMPLETED') {
+        try {
+            await invoiceRepo.createInvoice({
+                invoice_code: `INV-${Date.now()}`,
+                order_id: existingOrder.id,
+                employee_id: data.employee_id || existingOrder.employee_id,
+                total_amount: existingOrder.total_amount
+            });
+        } catch (error) {
+            console.error("Failed to automatically generate invoice:", error);
+        }
+    }
+
     return await getOrderById(id);
 }
 

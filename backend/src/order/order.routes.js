@@ -14,6 +14,7 @@ router.delete("/:id", authenticate, adminOnly, orderController.deleteOrder);
 
 // Employee specific actions
 router.put("/:id/approve", authenticate, employeeOnly, orderController.approveOrder);
+router.put("/:id/complete", authenticate, employeeOnly, orderController.completeOrder);
 router.put("/:id/cancel", authenticate, employeeOnly, orderController.cancelOrder);
 
 export default router;
