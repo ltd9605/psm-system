@@ -79,3 +79,26 @@ export async function deleteProduct(req, res) {
         });
     }
 }
+
+export async function checkProductQuantity(req, res) {
+    try {
+        const productId = Number(req.params.id);
+        const requestedQuantity = req.query.quantity ? Number(req.query.quantity) : undefined;
+
+        if (req.query.quantity && (isNaN(requestedQuantity) || requestedQuantity < 0)) {
+            return res.status(400).json({ message: "Invalid quantity requested" });
+        }
+
+        const result = await productService.checkProductQuantity(productId, requestedQuantity);
+
+        return res.status(200).json({
+            message: "Check product quantity successfully",
+            data: result
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        });
+    }
+}

@@ -172,3 +172,31 @@ export async function deleteOrder(id) {
 
     return result.affectedRows;
 }
+
+export async function getOrderStats(filters = {}) {
+    const { startDate, endDate } = filters;
+    let sql = `
+        SELECT 
+            COUNT(id) as total_orders,
+            SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_orders,
+            SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_orders,
+            SUM(CASE WHEN status = 'CANCELLED' THEN 1 ELSE 0 END) as cancelled_orders,
+            SUM(CASE WHEN status = 'COMPLETED' THEN total_amount ELSE 0 END) as total_revenue
+        FROM orders
+        WHERE 1=1
+    `;
+    const params = [];
+
+    if (startDate) {
+        sql += ` AND created_at >= ?`;
+        params.push(startDate);
+    }
+
+    if (endDate) {
+        sql += ` AND created_at <= ?`;
+        params.push(endDate);
+    }
+
+    const [rows] = await pool.query(sql, params);
+    return rows[0];
+}

@@ -208,6 +208,14 @@ export async function updateProduct(id, product) {
 
     return result.affectedRows;
 }
+
+export async function getProductQuantity(id) {
+    const [rows] = await pool.query(
+        `SELECT quantity FROM products WHERE id = ? LIMIT 1`,
+        [id]
+    );
+    return rows[0] ?? null;
+}
 export async function softDeleteProduct(id) {
 
     const [result] = await pool.query(

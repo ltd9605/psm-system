@@ -1,7 +1,7 @@
 import express from "express";
 import * as productController from "./product.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
-import { employeeOnly } from "../middlewares/employee.middleware.js";
+import { managerOnly } from "../middlewares/employee.middleware.js";
 
 const router = express.Router();
 router.get(
@@ -10,18 +10,22 @@ router.get(
 );
 router.post(
     "/",
-    authenticate, employeeOnly,
+    authenticate, managerOnly,
     productController.createProduct
 );
 router.patch(
     "/:id",
-    authenticate, employeeOnly,
+    authenticate, managerOnly,
     productController.updateProduct
 );
 router.delete(
     "/:id",
-    authenticate, employeeOnly,
+    authenticate, managerOnly,
     productController.deleteProduct
-)
+);
+router.get(
+    "/:id/quantity",
+    productController.checkProductQuantity
+);
 
 export default router;

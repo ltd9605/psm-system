@@ -4,6 +4,10 @@ export async function getOrders(filters) {
     return await orderRepo.findOrders(filters);
 }
 
+export async function getOrderStats(filters) {
+    return await orderRepo.getOrderStats(filters);
+}
+
 export async function getOrderById(id) {
     const order = await orderRepo.findOrderById(id);
     if (!order) {

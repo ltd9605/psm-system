@@ -34,6 +34,16 @@ export async function findInvoices(filters = {}) {
         params.push(Number(employeeId));
     }
 
+    if (filters.startDate) {
+        sql += ` AND i.created_at >= ?`;
+        params.push(filters.startDate);
+    }
+
+    if (filters.endDate) {
+        sql += ` AND i.created_at <= ?`;
+        params.push(filters.endDate);
+    }
+
     sql += ` ORDER BY i.created_at DESC`;
 
     if (limit) {

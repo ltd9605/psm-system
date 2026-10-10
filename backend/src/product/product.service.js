@@ -190,3 +190,20 @@ export async function deleteProduct(id) {
 
     await productRepository.softDeleteProduct(id);
 }
+
+export async function checkProductQuantity(id, requestedQuantity) {
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Invalid product id");
+    }
+
+    const product = await productRepository.getProductQuantity(id);
+    if (!product) {
+        throw new Error("Product not found");
+    }
+
+    return {
+        productId: id,
+        availableQuantity: product.quantity,
+        isSufficient: requestedQuantity !== undefined ? product.quantity >= requestedQuantity : true
+    };
+}

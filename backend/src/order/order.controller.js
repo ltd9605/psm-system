@@ -10,6 +10,16 @@ export async function getOrders(req, res) {
     }
 }
 
+export async function getOrderStats(req, res) {
+    try {
+        const filters = req.query;
+        const stats = await orderService.getOrderStats(filters);
+        res.status(200).json(stats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export async function getOrderById(req, res) {
     try {
         const { id } = req.params;
@@ -44,6 +54,28 @@ export async function deleteOrder(req, res) {
         const { id } = req.params;
         const result = await orderService.deleteOrder(id);
         res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export async function approveOrder(req, res) {
+    try {
+        const { id } = req.params;
+        const employeeId = req.user.userId;
+        const order = await orderService.updateOrder(id, { status: 'CONFIRMED', employee_id: employeeId });
+        res.status(200).json({ message: "Order approved successfully", order });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export async function cancelOrder(req, res) {
+    try {
+        const { id } = req.params;
+        const employeeId = req.user.userId;
+        const order = await orderService.updateOrder(id, { status: 'CANCELLED', employee_id: employeeId });
+        res.status(200).json({ message: "Order cancelled successfully", order });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

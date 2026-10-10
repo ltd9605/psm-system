@@ -1,18 +1,38 @@
 import express from "express";
 import * as customerController from "./customer.controller.js";
+import { authenticate } from "../middlewares/auth.middleware.js";
+import { adminOnly } from "../middlewares/employee.middleware.js";
 
 const router = express.Router();
 
-router.get("/", customerController.getCustomers);
-router.get("/:id", customerController.getCustomerById);
-router.post("/", customerController.createCustomer);
-router.put("/:id", customerController.updateCustomer);
-router.delete("/:id", customerController.deleteCustomer);
-router.post("/:id/cart", customerController.addProductToCart);
-router.get("/:id/cart", customerController.getCart);
-router.post("/:id/checkout", customerController.checkout);
-router.put("/:id/orders/:orderId/cancel", customerController.cancelOrder);
-router.get("/:id/orders", customerController.getOrders);
-router.get("/:id/orders/:orderId", customerController.getOrderById);
+/**
+ * @swagger
+ * tags:
+ *   name: Customers
+ *   description: Customer management APIs
+ */
+
+/**
+ * @swagger
+ * /api/customers:
+ *   get:
+ *     summary: Retrieve a list of customers
+ *     tags: [Customers]
+ *     responses:
+ *       200:
+ *         description: A list of customers.
+ */
+router.get("/", authenticate, adminOnly, customerController.getCustomers);
+router.get("/:id", authenticate, customerController.getCustomerById); // Customer or Admin
+router.post("/", customerController.createCustomer); // Registration
+router.put("/:id", authenticate, customerController.updateCustomer); // Customer or Admin
+router.delete("/:id", authenticate, adminOnly, customerController.deleteCustomer); // Admin only
+
+router.post("/:id/cart", authenticate, customerController.addProductToCart);
+router.get("/:id/cart", authenticate, customerController.getCart);
+router.post("/:id/checkout", authenticate, customerController.checkout);
+router.put("/:id/orders/:orderId/cancel", authenticate, customerController.cancelOrder);
+router.get("/:id/orders", authenticate, customerController.getOrders);
+router.get("/:id/orders/:orderId", authenticate, customerController.getOrderById);
 
 export default router;

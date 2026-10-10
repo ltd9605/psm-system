@@ -8,6 +8,8 @@ import customerRoutes from "./customer/customer.routes.js";
 import employeeRoutes from "./employee/employee.routes.js";
 import invoiceRoutes from "./invoice/invoice.routes.js";
 import orderRoutes from "./order/order.routes.js";
+import brandRoutes from "./brand/brand.routes.js";
+import { setupSwagger } from "./config/swagger.js";
 
 const app = express();
 dotenv.config();
@@ -40,5 +42,8 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/brands", brandRoutes);
+
+setupSwagger(app);
 
 export default app;
