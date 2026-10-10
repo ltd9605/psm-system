@@ -1,8 +1,10 @@
 -- ==========================================
 -- SCRIPT LÀM SẠCH DỮ LIỆU CŨ VÀ RESET ID
 -- ==========================================
+USE psm_system;
+ALTER DATABASE psm_system CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
 TRUNCATE TABLE `cart_items`;
 TRUNCATE TABLE `carts`;
 TRUNCATE TABLE `invoices`;
@@ -23,7 +25,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO `roles` (`name`) VALUES
 ('ADMIN'),
 ('EMPLOYEE'),
-('CUSTOMER');
+('CUSTOMER'),
+('MANAGER');
 
 INSERT INTO `brands` (`name`, `description`, `status`) VALUES
 ('Apple', 'Hệ sinh thái khép kín, bảo mật cao và hiệu năng vượt trội với iPhone, iPad, Mac.', 'ACTIVE'),
