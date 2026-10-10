@@ -1,9 +1,9 @@
 import pool from "../config/database.js";
 
 export async function findInvoices(filters = {}) {
-    const { search, orderId, employeeId, limit, offset } = filters;
+  const { search, orderId, employeeId, limit, offset } = filters;
 
-    let sql = `
+  let sql = `
         SELECT
             i.id,
             i.invoice_code,
@@ -17,52 +17,52 @@ export async function findInvoices(filters = {}) {
         WHERE 1=1
     `;
 
-    const params = [];
+  const params = [];
 
-    if (search) {
-        sql += ` AND i.invoice_code LIKE ?`;
-        params.push(`%${search}%`);
-    }
+  if (search) {
+    sql += ` AND i.invoice_code LIKE ?`;
+    params.push(`%${search}%`);
+  }
 
-    if (orderId) {
-        sql += ` AND i.order_id = ?`;
-        params.push(Number(orderId));
-    }
+  if (orderId) {
+    sql += ` AND i.order_id = ?`;
+    params.push(Number(orderId));
+  }
 
-    if (employeeId) {
-        sql += ` AND i.employee_id = ?`;
-        params.push(Number(employeeId));
-    }
+  if (employeeId) {
+    sql += ` AND i.employee_id = ?`;
+    params.push(Number(employeeId));
+  }
 
-    if (filters.startDate) {
-        sql += ` AND i.created_at >= ?`;
-        params.push(filters.startDate);
-    }
+  if (filters.startDate) {
+    sql += ` AND i.created_at >= ?`;
+    params.push(filters.startDate);
+  }
 
-    if (filters.endDate) {
-        sql += ` AND i.created_at <= ?`;
-        params.push(filters.endDate);
-    }
+  if (filters.endDate) {
+    sql += ` AND i.created_at <= ?`;
+    params.push(filters.endDate);
+  }
 
-    sql += ` ORDER BY i.created_at DESC`;
+  sql += ` ORDER BY i.created_at DESC`;
 
-    if (limit) {
-        sql += ` LIMIT ?`;
-        params.push(Number(limit));
-    }
-    
-    if (offset) {
-        sql += ` OFFSET ?`;
-        params.push(Number(offset));
-    }
+  if (limit) {
+    sql += ` LIMIT ?`;
+    params.push(Number(limit));
+  }
 
-    const [rows] = await pool.query(sql, params);
-    return rows;
+  if (offset) {
+    sql += ` OFFSET ?`;
+    params.push(Number(offset));
+  }
+
+  const [rows] = await pool.query(sql, params);
+  return rows;
 }
 
 export async function findInvoiceById(id) {
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT
             i.id,
             i.invoice_code,
@@ -76,22 +76,17 @@ export async function findInvoiceById(id) {
         WHERE i.id = ?
         LIMIT 1
         `,
-        [id]
-    );
+    [id],
+  );
 
-    return rows[0] ?? null;
+  return rows[0] ?? null;
 }
 
 export async function createInvoice(invoice) {
-    const {
-        invoice_code,
-        order_id,
-        employee_id,
-        total_amount
-    } = invoice;
+  const { invoice_code, order_id, employee_id, total_amount } = invoice;
 
-    const [result] = await pool.query(
-        `
+  const [result] = await pool.query(
+    `
         INSERT INTO invoices (
             invoice_code,
             order_id,
@@ -100,27 +95,17 @@ export async function createInvoice(invoice) {
         )
         VALUES (?, ?, ?, ?)
         `,
-        [
-            invoice_code,
-            order_id,
-            employee_id,
-            total_amount
-        ]
-    );
+    [invoice_code, order_id, employee_id, total_amount],
+  );
 
-    return result.insertId;
+  return result.insertId;
 }
 
 export async function updateInvoice(id, invoice) {
-    const {
-        invoice_code,
-        order_id,
-        employee_id,
-        total_amount
-    } = invoice;
+  const { invoice_code, order_id, employee_id, total_amount } = invoice;
 
-    const [result] = await pool.query(
-        `
+  const [result] = await pool.query(
+    `
         UPDATE invoices
         SET
             invoice_code = ?,
@@ -129,23 +114,14 @@ export async function updateInvoice(id, invoice) {
             total_amount = ?
         WHERE id = ?
         `,
-        [
-            invoice_code,
-            order_id,
-            employee_id,
-            total_amount,
-            id
-        ]
-    );
+    [invoice_code, order_id, employee_id, total_amount, id],
+  );
 
-    return result.affectedRows;
+  return result.affectedRows;
 }
 
 export async function deleteInvoice(id) {
-    const [result] = await pool.query(
-        `DELETE FROM invoices WHERE id = ?`,
-        [id]
-    );
+  const [result] = await pool.query(`DELETE FROM invoices WHERE id = ?`, [id]);
 
-    return result.affectedRows;
+  return result.affectedRows;
 }

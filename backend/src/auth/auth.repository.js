@@ -1,31 +1,24 @@
 import pool from "../config/database.js";
 
 export async function findCustomerByUsername(username) {
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT *
         FROM customers
         WHERE username = ?
         LIMIT 1
         `,
-        [username]
-    );
+    [username],
+  );
 
-    return rows[0] ?? null;
+  return rows[0] ?? null;
 }
 
 export async function createCustomer(customer) {
-    const {
-        fullName,
-        username,
-        password,
-        phone,
-        email,
-        address
-    } = customer;
+  const { fullName, username, password, phone, email, address } = customer;
 
-    const [result] = await pool.query(
-        `
+  const [result] = await pool.query(
+    `
         INSERT INTO customers (
             full_name,
             username,
@@ -36,22 +29,15 @@ export async function createCustomer(customer) {
         )
         VALUES (?, ?, ?, ?, ?, ?)
         `,
-        [
-            fullName,
-            username,
-            password,
-            phone,
-            email,
-            address
-        ]
-    );
+    [fullName, username, password, phone, email, address],
+  );
 
-    return result.insertId;
+  return result.insertId;
 }
 
 export async function findEmployeeByUsername(username) {
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT
             e.id,
             e.full_name,
@@ -66,8 +52,8 @@ export async function findEmployeeByUsername(username) {
         WHERE e.username = ?
         LIMIT 1
         `,
-        [username]
-    );
+    [username],
+  );
 
-    return rows[0] ?? null;
+  return rows[0] ?? null;
 }

@@ -9,6 +9,11 @@ router.get("/", authenticate, adminOnly, employeeController.getEmployees);
 router.get("/:id", authenticate, adminOnly, employeeController.getEmployeeById);
 router.post("/", authenticate, adminOnly, employeeController.createEmployee);
 router.put("/:id", authenticate, adminOnly, employeeController.updateEmployee);
-router.delete("/:id", authenticate, adminOnly, employeeController.deleteEmployee);
+router.delete(
+  "/:id",
+  authenticate,
+  adminOnly,
+  employeeController.deleteEmployee,
+);
 
 export default router;

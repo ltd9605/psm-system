@@ -1,9 +1,9 @@
 import pool from "../config/database.js";
 
 export async function findEmployees(filters = {}) {
-    const { search, status, roleId, limit, offset } = filters;
+  const { search, status, roleId, limit, offset } = filters;
 
-    let sql = `
+  let sql = `
         SELECT
             e.id,
             e.full_name,
@@ -19,42 +19,42 @@ export async function findEmployees(filters = {}) {
         WHERE 1=1
     `;
 
-    const params = [];
+  const params = [];
 
-    if (search) {
-        sql += ` AND (e.full_name LIKE ? OR e.username LIKE ? OR e.phone LIKE ?)`;
-        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-    }
+  if (search) {
+    sql += ` AND (e.full_name LIKE ? OR e.username LIKE ? OR e.phone LIKE ?)`;
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
 
-    if (status) {
-        sql += ` AND e.status = ?`;
-        params.push(status);
-    }
+  if (status) {
+    sql += ` AND e.status = ?`;
+    params.push(status);
+  }
 
-    if (roleId) {
-        sql += ` AND e.role_id = ?`;
-        params.push(Number(roleId));
-    }
+  if (roleId) {
+    sql += ` AND e.role_id = ?`;
+    params.push(Number(roleId));
+  }
 
-    sql += ` ORDER BY e.created_at DESC`;
+  sql += ` ORDER BY e.created_at DESC`;
 
-    if (limit) {
-        sql += ` LIMIT ?`;
-        params.push(Number(limit));
-    }
-    
-    if (offset) {
-        sql += ` OFFSET ?`;
-        params.push(Number(offset));
-    }
+  if (limit) {
+    sql += ` LIMIT ?`;
+    params.push(Number(limit));
+  }
 
-    const [rows] = await pool.query(sql, params);
-    return rows;
+  if (offset) {
+    sql += ` OFFSET ?`;
+    params.push(Number(offset));
+  }
+
+  const [rows] = await pool.query(sql, params);
+  return rows;
 }
 
 export async function findEmployeeById(id) {
-    const [rows] = await pool.query(
-        `
+  const [rows] = await pool.query(
+    `
         SELECT
             e.id,
             e.full_name,
@@ -70,24 +70,24 @@ export async function findEmployeeById(id) {
         WHERE e.id = ?
         LIMIT 1
         `,
-        [id]
-    );
+    [id],
+  );
 
-    return rows[0] ?? null;
+  return rows[0] ?? null;
 }
 
 export async function createEmployee(employee) {
-    const {
-        full_name,
-        username,
-        password,
-        phone,
-        status = 'ACTIVE',
-        role_id
-    } = employee;
+  const {
+    full_name,
+    username,
+    password,
+    phone,
+    status = "ACTIVE",
+    role_id,
+  } = employee;
 
-    const [result] = await pool.query(
-        `
+  const [result] = await pool.query(
+    `
         INSERT INTO employees (
             full_name,
             username,
@@ -98,30 +98,16 @@ export async function createEmployee(employee) {
         )
         VALUES (?, ?, ?, ?, ?, ?)
         `,
-        [
-            full_name,
-            username,
-            password,
-            phone,
-            status,
-            role_id
-        ]
-    );
+    [full_name, username, password, phone, status, role_id],
+  );
 
-    return result.insertId;
+  return result.insertId;
 }
 
 export async function updateEmployee(id, employee) {
-    const {
-        full_name,
-        username,
-        password,
-        phone,
-        status,
-        role_id
-    } = employee;
+  const { full_name, username, password, phone, status, role_id } = employee;
 
-    let sql = `
+  let sql = `
         UPDATE employees
         SET
             full_name = ?,
@@ -130,26 +116,26 @@ export async function updateEmployee(id, employee) {
             status = ?,
             role_id = ?
     `;
-    const params = [full_name, username, phone, status, role_id];
+  const params = [full_name, username, phone, status, role_id];
 
-    if (password) {
-        sql += `, password = ?`;
-        params.push(password);
-    }
+  if (password) {
+    sql += `, password = ?`;
+    params.push(password);
+  }
 
-    sql += ` WHERE id = ?`;
-    params.push(id);
+  sql += ` WHERE id = ?`;
+  params.push(id);
 
-    const [result] = await pool.query(sql, params);
+  const [result] = await pool.query(sql, params);
 
-    return result.affectedRows;
+  return result.affectedRows;
 }
 
 export async function softDeleteEmployee(id) {
-    const [result] = await pool.query(
-        `UPDATE employees SET status = 'INACTIVE' WHERE id = ?`,
-        [id]
-    );
+  const [result] = await pool.query(
+    `UPDATE employees SET status = 'INACTIVE' WHERE id = ?`,
+    [id],
+  );
 
-    return result.affectedRows;
+  return result.affectedRows;
 }
