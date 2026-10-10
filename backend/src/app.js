@@ -10,6 +10,7 @@ import invoiceRoutes from "./invoice/invoice.routes.js";
 import orderRoutes from "./order/order.routes.js";
 import brandRoutes from "./brand/brand.routes.js";
 import { setupSwagger } from "./config/swagger.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 dotenv.config();
@@ -45,5 +46,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/brands", brandRoutes);
 
 setupSwagger(app);
+
+// Global Error Handler must be the last middleware
+app.use(errorHandler);
 
 export default app;

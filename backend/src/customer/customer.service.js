@@ -1,4 +1,7 @@
 import * as customerRepo from "./customer.repository.js";
+import bcrypt from "bcrypt";
+
+const SALT_ROUNDS = 10;
 
 export async function getCustomers(filters) {
     return await customerRepo.findCustomers(filters);
@@ -18,6 +21,9 @@ export async function createCustomer(data) {
 }
 
 export async function updateCustomer(id, data) {
+    if (data.password) {
+        data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+    }
     const affectedRows = await customerRepo.updateCustomer(id, data);
     if (affectedRows === 0) {
         throw new Error("Customer not found or no changes made");
@@ -61,6 +67,31 @@ export async function addProductToCart(customerId, productId, quantity) {
         await customerRepo.addCartItem(cartId, productId, quantity);
         return { message: "Product added to cart", cartId, productId, quantity };
     }
+}
+
+export async function updateCartItem(customerId, productId, quantity) {
+    if (quantity <= 0) {
+        throw new Error("Quantity must be greater than 0");
+    }
+    const cart = await customerRepo.getCartByCustomerId(customerId);
+    if (!cart) throw new Error("Cart not found");
+
+    const existingItem = await customerRepo.getCartItem(cart.id, productId);
+    if (!existingItem) throw new Error("Product not in cart");
+
+    await customerRepo.updateCartItemQuantity(existingItem.id, quantity);
+    return { message: "Cart item quantity updated", productId, quantity };
+}
+
+export async function removeCartItem(customerId, productId) {
+    const cart = await customerRepo.getCartByCustomerId(customerId);
+    if (!cart) throw new Error("Cart not found");
+
+    const existingItem = await customerRepo.getCartItem(cart.id, productId);
+    if (!existingItem) throw new Error("Product not in cart");
+
+    await customerRepo.removeCartItem(existingItem.id);
+    return { message: "Product removed from cart successfully" };
 }
 
 export async function getCart(customerId) {

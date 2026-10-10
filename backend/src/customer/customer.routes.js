@@ -29,6 +29,8 @@ router.put("/:id", authenticate, customerController.updateCustomer); // Customer
 router.delete("/:id", authenticate, adminOnly, customerController.deleteCustomer); // Admin only
 
 router.post("/:id/cart", authenticate, customerController.addProductToCart);
+router.put("/:id/cart/:productId", authenticate, customerController.updateCartItem);
+router.delete("/:id/cart/:productId", authenticate, customerController.removeCartItem);
 router.get("/:id/cart", authenticate, customerController.getCart);
 router.post("/:id/checkout", authenticate, customerController.checkout);
 router.put("/:id/orders/:orderId/cancel", authenticate, customerController.cancelOrder);

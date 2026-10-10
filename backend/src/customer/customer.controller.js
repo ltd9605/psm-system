@@ -65,6 +65,32 @@ export async function addProductToCart(req, res) {
     }
 }
 
+export async function updateCartItem(req, res) {
+    try {
+        const { id: customerId, productId } = req.params;
+        const { quantity } = req.body;
+
+        if (!quantity) {
+            return res.status(400).json({ error: "quantity is required" });
+        }
+
+        const result = await customerService.updateCartItem(customerId, productId, quantity);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function removeCartItem(req, res) {
+    try {
+        const { id: customerId, productId } = req.params;
+        const result = await customerService.removeCartItem(customerId, productId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 export async function getCart(req, res) {
     try {
         const { id: customerId } = req.params;

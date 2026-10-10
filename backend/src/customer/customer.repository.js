@@ -180,6 +180,14 @@ export async function updateCartItemQuantity(cartItemId, newQuantity) {
     return result.affectedRows;
 }
 
+export async function removeCartItem(cartItemId) {
+    const [result] = await pool.query(
+        `DELETE FROM cart_items WHERE id = ?`,
+        [cartItemId]
+    );
+    return result.affectedRows;
+}
+
 export async function getCartWithItems(customerId) {
     const [cartRows] = await pool.query(
         `SELECT id, customer_id, created_at, updated_at FROM carts WHERE customer_id = ? LIMIT 1`,
