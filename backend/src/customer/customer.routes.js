@@ -5,23 +5,6 @@ import { adminOnly } from "../middlewares/employee.middleware.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Customers
- *   description: Customer management APIs
- */
-
-/**
- * @swagger
- * /api/customers:
- *   get:
- *     summary: Retrieve a list of customers
- *     tags: [Customers]
- *     responses:
- *       200:
- *         description: A list of customers.
- */
 router.get("/", authenticate, adminOnly, customerController.getCustomers);
 router.get("/:id", authenticate, customerController.getCustomerById); // Customer or Admin
 router.post("/", customerController.createCustomer); // Registration
