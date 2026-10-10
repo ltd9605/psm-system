@@ -1,0 +1,101 @@
+import * as customerService from "./customer.service.js";
+
+export async function getCustomers(req, res) {
+  const filters = req.query;
+  const customers = await customerService.getCustomers(filters);
+  res.status(200).json(customers);
+}
+
+export async function getCustomerById(req, res) {
+  const { id } = req.params;
+  const customer = await customerService.getCustomerById(id);
+  res.status(200).json(customer);
+}
+
+export async function createCustomer(req, res) {
+  const customer = await customerService.createCustomer(req.body);
+  res.status(201).json(customer);
+}
+
+export async function updateCustomer(req, res) {
+  const { id } = req.params;
+  const customer = await customerService.updateCustomer(id, req.body);
+  res.status(200).json(customer);
+}
+
+export async function deleteCustomer(req, res) {
+  const { id } = req.params;
+  const result = await customerService.deleteCustomer(id);
+  res.status(200).json(result);
+}
+
+export async function addProductToCart(req, res) {
+  const { id: customerId } = req.params;
+  const { productId, quantity } = req.body;
+
+  if (!productId || !quantity) {
+    return res
+      .status(400)
+      .json({ error: "productId and quantity are required" });
+  }
+
+  const result = await customerService.addProductToCart(
+    customerId,
+    productId,
+    quantity,
+  );
+  res.status(200).json(result);
+}
+
+export async function updateCartItem(req, res) {
+  const { id: customerId, productId } = req.params;
+  const { quantity } = req.body;
+
+  if (!quantity) {
+    return res.status(400).json({ error: "quantity is required" });
+  }
+
+  const result = await customerService.updateCartItem(
+    customerId,
+    productId,
+    quantity,
+  );
+  res.status(200).json(result);
+}
+
+export async function removeCartItem(req, res) {
+  const { id: customerId, productId } = req.params;
+  const result = await customerService.removeCartItem(customerId, productId);
+  res.status(200).json(result);
+}
+
+export async function getCart(req, res) {
+  const { id: customerId } = req.params;
+  const cart = await customerService.getCart(customerId);
+  res.status(200).json(cart);
+}
+
+export async function checkout(req, res) {
+  const { id: customerId } = req.params;
+  const result = await customerService.checkout(customerId, req.body);
+  res.status(200).json(result);
+}
+
+export async function cancelOrder(req, res) {
+  const { id: customerId, orderId } = req.params;
+  const result = await customerService.cancelOrder(customerId, orderId);
+  res.status(200).json(result);
+}
+
+export async function getOrders(req, res) {
+  const { id: customerId } = req.params;
+  const { status } = req.query;
+  const orders = await customerService.getOrders(customerId, status);
+  res.status(200).json(orders);
+}
+
+export async function getOrderById(req, res) {
+  const { id: customerId, orderId } = req.params;
+  const order = await customerService.getOrderById(customerId, orderId);
+  res.status(200).json(order);
+}
