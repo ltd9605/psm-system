@@ -63,7 +63,8 @@ CREATE TABLE `orders` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `confirmed_at` datetime ,
   `completed_at` datetime,
-  `cancelled_at` datetime
+  `cancelled_at` datetime,
+  `cancel_reason` varchar(255)
 );
 
 CREATE TABLE `order_items` (
