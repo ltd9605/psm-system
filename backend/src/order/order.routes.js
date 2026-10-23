@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", authenticate, employeeOnly, orderController.getOrders);
 router.get("/stats", authenticate, managerOnly, orderController.getOrderStats);
 router.get("/:id", authenticate, orderController.getOrderById);
-router.post("/", authenticate, orderController.createOrder); // Customers create orders
+router.post("/", authenticate, employeeOnly, orderController.createOrder);
 router.put("/:id", authenticate, employeeOnly, orderController.updateOrder);
 router.delete("/:id", authenticate, adminOnly, orderController.deleteOrder);
 

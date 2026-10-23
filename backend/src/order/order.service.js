@@ -19,11 +19,26 @@ export async function getOrderById(id) {
 }
 
 export async function createOrder(data) {
+  const items = Array.isArray(data.items) ? data.items : [];
+
+  if (items.length === 0) {
+    throw new AppError("Order must contain at least one item", 400);
+  }
+
+  for (const item of items) {
+    if (!Number.isInteger(Number(item.product_id)) || Number(item.product_id) <= 0) {
+      throw new AppError("Each order item must have a valid product_id", 400);
+    }
+    if (!Number.isInteger(Number(item.quantity)) || Number(item.quantity) <= 0) {
+      throw new AppError("Each order item quantity must be a positive integer", 400);
+    }
+  }
+
   if (!data.order_code) {
     data.order_code = `ORD-${Date.now()}`;
   }
 
-  const newId = await orderRepo.createOrder(data);
+  const newId = await orderRepo.createOrderWithItems(data);
   return await getOrderById(newId);
 }
 
