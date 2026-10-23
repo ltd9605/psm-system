@@ -47,6 +47,56 @@ export async function getProducts(filters) {
     },
   };
 }
+
+export async function getAdminProducts(filters) {
+  const {
+    search,
+    minPrice,
+    maxPrice,
+    brandId,
+    limit = 10,
+    offset = 0,
+  } = filters;
+
+  const parsedLimit = Number(limit);
+  const parsedOffset = Number(offset);
+
+  if (
+    !Number.isSafeInteger(parsedLimit) ||
+    parsedLimit < 1 ||
+    parsedLimit > 100
+  ) {
+    throw new AppError("limit must be an integer between 1 and 100", 400);
+  }
+
+  if (!Number.isSafeInteger(parsedOffset) || parsedOffset < 0) {
+    throw new AppError("offset must be a non-negative integer", 400);
+  }
+
+  if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+    throw new AppError("minPrice must be less than maxPrice", 400);
+  }
+
+  const products = await productRepository.findProducts(
+    {
+      search,
+      minPrice,
+      maxPrice,
+      brandId,
+      limit: parsedLimit,
+      offset: parsedOffset,
+    },
+    { includeInactive: true },
+  );
+
+  return {
+    products,
+    pagination: {
+      limit: parsedLimit,
+      offset: parsedOffset,
+    },
+  };
+}
 export async function createProduct(data) {
   const {
     brandId,
@@ -112,6 +162,10 @@ export async function updateProduct(id, data) {
     throw new AppError("Product not found", 404);
   }
 
+  if (existingProduct.status === "DELETED") {
+    throw new AppError("Deleted product cannot be modified", 400);
+  }
+
   const {
     brandId,
     name,
@@ -161,7 +215,7 @@ export async function deleteProduct(id) {
     throw new AppError("Product not found", 404);
   }
 
-  if (product.status === "INACTIVE") {
+  if (["INACTIVE", "DELETED"].includes(product.status)) {
     throw new AppError("Product already deleted", 400);
   }
 

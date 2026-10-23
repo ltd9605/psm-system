@@ -1,7 +1,8 @@
 import pool from "../config/database.js";
 
-export async function findProducts(filters) {
+export async function findProducts(filters, options = {}) {
   const { search, minPrice, maxPrice, brandId, limit, offset } = filters;
+  const { includeInactive = false } = options;
 
   let sql = `
         SELECT
@@ -23,7 +24,7 @@ export async function findProducts(filters) {
         JOIN brands b
             ON p.brand_id = b.id
 
-        WHERE p.status = 'ACTIVE'
+        WHERE ${includeInactive ? "p.status IN ('ACTIVE', 'INACTIVE')" : "p.status = 'ACTIVE'"}
     `;
 
   const params = [];
@@ -209,7 +210,7 @@ export async function softDeleteProduct(id) {
   const [result] = await pool.query(
     `
         UPDATE products
-        SET status = 'INACTIVE'
+        SET status = 'DELETED'
         WHERE id = ?
         `,
     [id],

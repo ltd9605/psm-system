@@ -45,6 +45,13 @@ export async function createOrder(data) {
 export async function updateOrder(id, data) {
   const existingOrder = await getOrderById(id);
 
+  if (data.status === "CANCELLED") {
+    if (!data.cancel_reason || !String(data.cancel_reason).trim()) {
+      throw new AppError("Cancellation reason is required", 400);
+    }
+    data.cancel_reason = String(data.cancel_reason).trim();
+  }
+
   if (data.status) {
     // Automatically set timestamps based on status if they are not explicitly provided
     const now = new Date();

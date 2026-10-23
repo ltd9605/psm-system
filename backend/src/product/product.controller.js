@@ -24,6 +24,31 @@ export async function getProducts(req, res) {
     });
   }
 }
+
+export async function getAdminProducts(req, res) {
+  try {
+    const filters = {
+      search: req.query.search,
+      minPrice: req.query.minPrice,
+      maxPrice: req.query.maxPrice,
+      brandId: req.query.brandId,
+      limit: req.query.limit,
+      offset: req.query.offset,
+    };
+
+    const result = await productService.getAdminProducts(filters);
+
+    return res.status(200).json({
+      message: "Get all products successfully",
+      data: result.products,
+      pagination: result.pagination,
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      message: error.message,
+    });
+  }
+}
 export async function createProduct(req, res) {
   try {
     const product = await productService.createProduct(req.body);

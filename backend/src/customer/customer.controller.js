@@ -83,7 +83,11 @@ export async function checkout(req, res) {
 
 export async function cancelOrder(req, res) {
   const { id: customerId, orderId } = req.params;
-  const result = await customerService.cancelOrder(customerId, orderId);
+  const result = await customerService.cancelOrder(
+    customerId,
+    orderId,
+    req.body?.cancel_reason,
+  );
   res.status(200).json(result);
 }
 

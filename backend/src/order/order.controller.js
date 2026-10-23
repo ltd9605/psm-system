@@ -63,9 +63,11 @@ export async function completeOrder(req, res) {
 export async function cancelOrder(req, res) {
   const { id } = req.params;
   const employeeId = req.user.userId;
+  const { cancel_reason } = req.body;
   const order = await orderService.updateOrder(id, {
     status: "CANCELLED",
     employee_id: employeeId,
+    cancel_reason,
   });
   res.status(200).json({ message: "Order cancelled successfully", order });
 }

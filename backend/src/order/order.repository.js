@@ -19,6 +19,7 @@ export async function findOrders(filters = {}) {
             o.confirmed_at,
             o.completed_at,
             o.cancelled_at,
+            o.cancel_reason,
             c.full_name AS customer_account_name,
             e.full_name AS employee_name
         FROM orders o
@@ -82,6 +83,7 @@ export async function findOrderById(id) {
             o.confirmed_at,
             o.completed_at,
             o.cancelled_at,
+            o.cancel_reason,
             c.full_name AS customer_account_name,
             e.full_name AS employee_name
         FROM orders o
@@ -244,6 +246,7 @@ export async function updateOrder(id, order) {
     "confirmed_at",
     "completed_at",
     "cancelled_at",
+    "cancel_reason",
   ];
 
   for (const key of allowedFields) {

@@ -142,8 +142,16 @@ export async function checkout(customerId, data) {
   return { message: "Checkout successful", orderId };
 }
 
-export async function cancelOrder(customerId, orderId) {
-  await customerRepo.cancelCustomerOrder(customerId, orderId);
+export async function cancelOrder(customerId, orderId, cancelReason) {
+  if (!cancelReason || !String(cancelReason).trim()) {
+    throw new AppError("Cancellation reason is required", 400);
+  }
+
+  await customerRepo.cancelCustomerOrder(
+    customerId,
+    orderId,
+    String(cancelReason).trim(),
+  );
   return { message: "Order cancelled successfully" };
 }
 
