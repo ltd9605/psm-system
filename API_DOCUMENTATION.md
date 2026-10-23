@@ -1,90 +1,194 @@
 # PSM System - API Documentation
 
-Tài liệu này mô tả chi tiết các API thực tế đang hoạt động trong dự án, dựa 100% vào mã nguồn hiện tại (Controllers, Services, Repositories). Đa số các API yêu cầu xác thực bằng Token (`Authorization: Bearer <token>`).
+Tài liệu này mô tả các endpoint đang được khai báo trong backend hiện tại.
+
+## Quy ước chung
+
+- Base URL: `http://localhost:3000/api`
+- Header xác thực:
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+- Trạng thái sản phẩm:
+  - `ACTIVE`: khách hàng và nhân viên có thể xem.
+  - `INACTIVE`: chỉ dùng để ẩn/hiện trong quản trị; không hiển thị ở catalog public.
+  - `DELETED`: xóa mềm; không được trả về cho catalog public hoặc endpoint quản trị sản phẩm.
+- Trạng thái đơn hàng: `PENDING`, `CONFIRMED`, `COMPLETED`, `CANCELLED`.
+- Các lỗi nghiệp vụ thường trả JSON dạng:
+
+```json
+{
+  "message": "Nội dung lỗi"
+}
+```
 
 ---
 
-## 1. Authentication (Xác thực)
-| Endpoint | Phương thức | Quyền | Mô tả |
+## 1. Authentication
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/auth/register` | `POST` | Public | Đăng ký tài khoản Khách hàng. Body: `full_name`, `username`, `password`, `phone`, `email`, `address`. |
-| `/api/auth/login` | `POST` | Public | Khách hàng đăng nhập. Body: `username`, `password`. |
-| `/api/auth/employee-login` | `POST` | Public | Nhân viên/Quản lý/Admin đăng nhập. Body: `username`, `password`. |
+| `/api/auth/customer/register` | `POST` | Public | Đăng ký khách hàng. Body: `fullName`, `username`, `password`, `phone`, `email`, `address`. |
+| `/api/auth/customer/login` | `POST` | Public | Khách hàng đăng nhập. Body: `username`, `password`. |
+| `/api/auth/employee/login` | `POST` | Public | Nhân viên/quản lý/admin đăng nhập. Body: `username`, `password`. |
+
+Response đăng nhập có `token` và `user`.
 
 ---
 
-## 2. Brands (Hãng Sản Xuất)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 2. Brands
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/brands` | `GET` | Public | Lấy danh sách hãng.<br>**Query Params:**<br>- `search`: Tìm theo tên hãng (`LIKE`).<br>- `status`: Lọc theo trạng thái (vd: `ACTIVE`, `INACTIVE`). |
-| `/api/brands/:id` | `GET` | Public | Lấy chi tiết 1 hãng. |
-| `/api/brands` | `POST` | Manager, Admin | Thêm hãng mới. |
-| `/api/brands/:id` | `PUT` | Manager, Admin | Cập nhật hãng. |
-| `/api/brands/:id` | `DELETE` | Manager, Admin | Xóa hãng. |
+| `/api/brands` | `GET` | Public | Danh sách hãng. Query: `search`, `status`. |
+| `/api/brands/:id` | `GET` | Public | Chi tiết hãng. |
+| `/api/brands` | `POST` | Manager/Admin | Tạo hãng. |
+| `/api/brands/:id` | `PUT` | Manager/Admin | Cập nhật hãng. |
+| `/api/brands/:id` | `DELETE` | Manager/Admin | Xóa hãng. |
 
 ---
 
-## 3. Products (Sản Phẩm)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 3. Products
+
+### Catalog public
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/products` | `GET` | Public | Lấy danh sách sản phẩm. Trả về kèm `pagination`.<br>**Query Params:**<br>- `search`: Tìm theo `name` hoặc `description`.<br>- `minPrice`: Giá tối thiểu.<br>- `maxPrice`: Giá tối đa.<br>- `brandId`: Lọc theo ID hãng.<br>- `status`: Lọc theo trạng thái.<br>- `limit`: Số dòng mỗi trang (mặc định không giới hạn nếu không truyền).<br>- `offset`: Bắt đầu lấy từ dòng nào (mặc định 0). |
-| `/api/products/:id` | `GET` | Public | Lấy chi tiết 1 sản phẩm. |
-| `/api/products` | `POST` | Manager, Admin | Thêm sản phẩm mới. |
-| `/api/products/:id` | `PUT` | Manager, Admin | Cập nhật thông tin sản phẩm. |
-| `/api/products/:id` | `DELETE` | Manager, Admin | Xóa sản phẩm. |
+| `/api/products` | `GET` | Public | Danh sách sản phẩm `ACTIVE`. Query: `search`, `minPrice`, `maxPrice`, `brandId`, `limit` (1-100, mặc định 10), `offset` (mặc định 0). |
+| `/api/products/:id/quantity` | `GET` | Public | Kiểm tra tồn kho. Query tùy chọn: `quantity`. |
+
+`GET /api/products` không trả về sản phẩm `INACTIVE` hoặc `DELETED`.
+
+### Quản trị sản phẩm
+
+| Endpoint | Method | Quyền | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `/api/products/admin` | `GET` | Admin | Danh sách sản phẩm `ACTIVE` và `INACTIVE`; không trả về `DELETED`. Query giống catalog public. |
+| `/api/products` | `POST` | Manager/Admin | Tạo sản phẩm mới, mặc định `ACTIVE`. |
+| `/api/products/:id` | `PATCH` | Manager/Admin | Cập nhật sản phẩm hoặc đổi trạng thái `ACTIVE`/`INACTIVE`. Không sửa được sản phẩm `DELETED`. |
+| `/api/products/:id` | `DELETE` | Manager/Admin | Xóa mềm bằng cách chuyển trạng thái sang `DELETED`. Sản phẩm không còn xuất hiện trên frontend. |
+
+Body tạo/cập nhật sản phẩm:
+
+```json
+{
+  "brandId": 1,
+  "name": "iPhone 14 Pro Max",
+  "storage": "256GB",
+  "color": "Tím",
+  "description": "Mô tả sản phẩm",
+  "price": 25000000,
+  "quantity": 10,
+  "imageUrl": "https://example.com/phone.jpg",
+  "status": "ACTIVE"
+}
+```
 
 ---
 
-## 4. Customers & Cart (Khách Hàng & Giỏ Hàng)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 4. Customers, Cart và Checkout
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/customers` | `GET` | Admin | Lấy danh sách khách hàng.<br>**Query Params:**<br>- `search`: Tìm theo `full_name`, `username`, `phone`, `email`.<br>- `limit`: Giới hạn số dòng.<br>- `offset`: Bỏ qua số dòng. |
-| `/api/customers/:id` | `GET` | Customer(Self), Admin | Lấy chi tiết khách hàng. |
-| `/api/customers` | `POST` | Public | Đăng ký khách hàng mới (tương tự auth). |
-| `/api/customers/:id` | `PUT` | Customer(Self), Admin | Cập nhật thông tin (Tự động mã hóa Hash nếu có đổi `password`). |
-| `/api/customers/:id` | `DELETE`| Admin | Xóa khách hàng. |
-| `/api/customers/:id/cart` | `GET` | Customer(Self) | Xem giỏ hàng kèm tính tổng tiền (`total_amount`). |
-| `/api/customers/:id/cart` | `POST` | Customer(Self) | Thêm sản phẩm. Body: `productId`, `quantity`. |
-| `/api/customers/:id/cart/:productId` | `PUT` | Customer(Self) | Sửa số lượng sản phẩm. Body: `quantity`. |
-| `/api/customers/:id/cart/:productId` | `DELETE` | Customer(Self) | Xóa 1 sản phẩm khỏi giỏ. |
-| `/api/customers/:id/checkout` | `POST` | Customer(Self) | Đặt hàng từ giỏ (Transaction trừ tồn kho tự động). Body: `shipping_address`. |
-| `/api/customers/:id/orders` | `GET` | Customer(Self) | Xem đơn hàng của mình.<br>**Query Params:**<br>- `status`: Lọc đơn theo trạng thái (PENDING, CONFIRMED...). |
-| `/api/customers/:id/orders/:orderId` | `GET` | Customer(Self) | Xem chi tiết đơn hàng kèm danh sách sản phẩm đã mua. |
-| `/api/customers/:id/orders/:orderId/cancel` | `PUT` | Customer(Self) | Hủy đơn (chỉ được hủy nếu đang `PENDING`, tự động hoàn tồn kho). |
+| `/api/customers` | `GET` | Admin | Danh sách khách hàng. Query: `search`, `limit`, `offset`. |
+| `/api/customers/:id` | `GET` | Đã đăng nhập | Chi tiết khách hàng. |
+| `/api/customers` | `POST` | Public | Tạo khách hàng. |
+| `/api/customers/:id` | `PUT` | Đã đăng nhập | Cập nhật thông tin khách hàng. |
+| `/api/customers/:id` | `DELETE` | Admin | Xóa khách hàng. |
+| `/api/customers/:id/cart` | `GET` | Đã đăng nhập | Xem giỏ hàng và `total_amount`. |
+| `/api/customers/:id/cart` | `POST` | Đã đăng nhập | Thêm sản phẩm. Body: `productId`, `quantity`. |
+| `/api/customers/:id/cart/:productId` | `PUT` | Đã đăng nhập | Cập nhật số lượng. Body: `quantity`. |
+| `/api/customers/:id/cart/:productId` | `DELETE` | Đã đăng nhập | Xóa sản phẩm khỏi giỏ. |
+| `/api/customers/:id/checkout` | `POST` | Đã đăng nhập | Tạo đơn từ giỏ và trừ tồn kho. Body: `shipping_address`. |
+| `/api/customers/:id/orders` | `GET` | Đã đăng nhập | Danh sách đơn hàng. Query tùy chọn: `status`. |
+| `/api/customers/:id/orders/:orderId` | `GET` | Đã đăng nhập | Chi tiết đơn và danh sách `items`. |
+| `/api/customers/:id/orders/:orderId/cancel` | `PUT` | Đã đăng nhập | Khách chỉ hủy được đơn `PENDING`; tự động hoàn tồn kho. Bắt buộc body `cancel_reason`. |
+
+Body hủy đơn:
+
+```json
+{
+  "cancel_reason": "Đặt nhầm sản phẩm"
+}
+```
+
+Lý do hủy được lưu tại `orders.cancel_reason` và trả về trong danh sách/chi tiết đơn hàng.
 
 ---
 
-## 5. Employees (Nhân Viên)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 5. Employees
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/employees` | `GET` | Admin | Lấy danh sách nhân viên.<br>**Query Params:**<br>- `search`: Tìm theo tên, username, sđt, email.<br>- `roleId`: Lọc theo cấp bậc.<br>- `status`: Lọc theo trạng thái.<br>- `limit`: Giới hạn kết quả.<br>- `offset`: Phân trang. |
-| `/api/employees/:id` | `GET` | Admin | Lấy chi tiết nhân viên. |
-| `/api/employees` | `POST` | Admin | Tạo nhân viên mới. (Mật khẩu tự động băm). |
-| `/api/employees/:id` | `PUT` | Admin | Cập nhật thông tin / mật khẩu. |
-| `/api/employees/:id` | `DELETE`| Admin | Xóa nhân viên (Soft Delete - cập nhật `status = INACTIVE`). |
+| `/api/employees` | `GET` | Admin | Danh sách nhân viên. Query: `search`, `status`, `roleId`, `limit`, `offset`. |
+| `/api/employees/:id` | `GET` | Admin | Chi tiết nhân viên. |
+| `/api/employees` | `POST` | Admin | Tạo nhân viên, mật khẩu được băm. |
+| `/api/employees/:id` | `PUT` | Admin | Cập nhật nhân viên. |
+| `/api/employees/:id` | `DELETE` | Admin | Khóa mềm bằng `status = INACTIVE`. |
 
 ---
 
-## 6. Orders (Đơn Hàng - NV Xử Lý)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 6. Orders và POS
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/orders` | `GET` | Employee+ | Xem danh sách đơn hàng.<br>**Query Params:**<br>- `search`: Tìm theo `order_code` hoặc `customer_name`.<br>- `status`: Lọc trạng thái.<br>- `customerId`: Lọc theo ID khách.<br>- `employeeId`: Lọc theo NV xử lý.<br>- `startDate`: Lọc từ ngày (so sánh `>= created_at`).<br>- `endDate`: Lọc đến ngày (so sánh `<= created_at`).<br>- `limit` & `offset`: Phân trang. |
-| `/api/orders/stats` | `GET` | Manager, Admin | Xem thống kê tổng doanh thu, số đơn hàng, số khách hàng, tổng sản phẩm. <br>**Query Params:**<br>- `startDate`, `endDate`, `status`. |
-| `/api/orders/:id` | `GET` | Employee+ | Xem chi tiết 1 đơn hàng (kèm danh sách `items`). |
-| `/api/orders` | `POST` | Employee+ | Tạo đơn thủ công. |
-| `/api/orders/:id` | `PUT` | Employee+ | Cập nhật tự do (Tự động cập nhật `confirmed_at`, `completed_at`, `cancelled_at`). |
-| `/api/orders/:id/approve` | `PUT` | Employee+ | Duyệt đơn (Gắn `employee_id` và đổi sang `CONFIRMED`). |
-| `/api/orders/:id/complete`| `PUT` | Employee+ | Hoàn thành đơn (Đổi sang `COMPLETED`, **Tự động sinh Hóa đơn**). |
-| `/api/orders/:id/cancel` | `PUT` | Employee+ | Hủy đơn (Hoàn tồn kho, đổi sang `CANCELLED`). |
+| `/api/orders` | `GET` | Employee+ | Danh sách đơn. Query: `search`, `status`, `customerId`, `employeeId`, `limit`, `offset`. |
+| `/api/orders/stats` | `GET` | Manager/Admin | Thống kê đơn hàng/doanh thu. Query tùy chọn: `startDate`, `endDate`. |
+| `/api/orders/:id` | `GET` | Đã đăng nhập | Chi tiết đơn và `items`. |
+| `/api/orders` | `POST` | Employee+ | Tạo đơn POS. Backend kiểm tra tồn kho và tự tính `total_amount` từ giá trong database. |
+| `/api/orders/:id` | `PUT` | Employee+ | Cập nhật đơn. Khi chuyển `CANCELLED` bắt buộc có `cancel_reason`. |
+| `/api/orders/:id/approve` | `PUT` | Employee+ | Duyệt đơn sang `CONFIRMED`. |
+| `/api/orders/:id/complete` | `PUT` | Employee+ | Hoàn thành đơn và tự tạo hóa đơn. |
+| `/api/orders/:id/cancel` | `PUT` | Employee+ | Hủy đơn, bắt buộc có `cancel_reason`. |
 | `/api/orders/:id` | `DELETE` | Admin | Xóa vĩnh viễn đơn hàng. |
 
+Body tạo đơn POS:
+
+```json
+{
+  "customer_id": 1,
+  "customer_name": "Nguyễn Văn A",
+  "customer_phone": "0900000000",
+  "shipping_address": "Mua tại quầy",
+  "items": [
+    { "product_id": 12, "quantity": 2 },
+    { "product_id": 18, "quantity": 1 }
+  ]
+}
+```
+
+`items` bắt buộc có ít nhất một phần tử. Giá, thành tiền từng dòng và tổng tiền được lấy/tính từ dữ liệu sản phẩm trong database; không tin giá do frontend gửi lên.
+
+Body nhân viên hủy đơn:
+
+```json
+{
+  "cancel_reason": "Khách yêu cầu hủy đơn"
+}
+```
+
 ---
 
-## 7. Invoices (Hóa Đơn)
-| Endpoint | Phương thức | Quyền | Mô tả chi tiết |
+## 7. Invoices
+
+| Endpoint | Method | Quyền | Mô tả |
 | :--- | :--- | :--- | :--- |
-| `/api/invoices` | `GET` | Manager, Admin | Xem danh sách hóa đơn (hiển thị kèm tên NV tạo).<br>**Query Params:**<br>- `search`: Tìm theo `invoice_code`.<br>- `orderId`: Lọc theo ID đơn hàng.<br>- `employeeId`: Lọc theo NV tạo hóa đơn.<br>- `startDate`: Lọc từ ngày (`>=`).<br>- `endDate`: Lọc đến ngày (`<=`).<br>- `limit` & `offset`: Phân trang. |
-| `/api/invoices/:id` | `GET` | Manager, Admin | Xem chi tiết 1 hóa đơn. |
-| `/api/invoices` | `POST` | Manager, Admin | Tạo hóa đơn (dù thường được Auto-Generate). |
-| `/api/invoices/:id` | `PUT` | Manager, Admin | Cập nhật hóa đơn. |
-| `/api/invoices/:id` | `DELETE`| Manager, Admin | Xóa hóa đơn. |
+| `/api/invoices` | `GET` | Employee+ | Danh sách hóa đơn. Query: `search`, `orderId`, `employeeId`, `startDate`, `endDate`, `limit`, `offset`. |
+| `/api/invoices/:id` | `GET` | Employee+ | Chi tiết hóa đơn. |
+| `/api/invoices` | `POST` | Employee+ | Tạo hóa đơn. |
+| `/api/invoices/:id` | `PUT` | Manager/Admin | Cập nhật hóa đơn. |
+| `/api/invoices/:id` | `DELETE` | Manager/Admin | Xóa hóa đơn. |
+
+---
+
+## 8. Cập nhật database hiện có
+
+Nếu database đã được tạo trước khi bổ sung lý do hủy, chạy một lần:
+
+```sql
+ALTER TABLE orders
+ADD COLUMN cancel_reason VARCHAR(255);
+```
