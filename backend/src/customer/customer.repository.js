@@ -272,7 +272,7 @@ export async function createOrderFromCart(customer, cart, shippingAddress) {
   }
 }
 
-export async function cancelCustomerOrder(customerId, orderId) {
+export async function cancelCustomerOrder(customerId, orderId, cancelReason) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -304,8 +304,10 @@ export async function cancelCustomerOrder(customerId, orderId) {
     }
 
     await connection.query(
-      `UPDATE orders SET status = 'CANCELLED', cancelled_at = NOW() WHERE id = ?`,
-      [orderId],
+      `UPDATE orders
+       SET status = 'CANCELLED', cancelled_at = NOW(), cancel_reason = ?
+       WHERE id = ?`,
+      [cancelReason, orderId],
     );
 
     await connection.commit();
@@ -322,7 +324,7 @@ export async function getCustomerOrders(customerId, status) {
   let sql = `
         SELECT 
             id, order_code, status, total_amount, 
-            created_at, confirmed_at, completed_at, cancelled_at, 
+            created_at, confirmed_at, completed_at, cancelled_at, cancel_reason,
             shipping_address
         FROM orders 
         WHERE customer_id = ?
@@ -345,7 +347,7 @@ export async function getCustomerOrderById(customerId, orderId) {
         SELECT 
             id, order_code, status, total_amount, 
             created_at, confirmed_at, completed_at, cancelled_at, 
-            shipping_address, employee_id
+            shipping_address, employee_id, cancel_reason
         FROM orders 
         WHERE id = ? AND customer_id = ?
         LIMIT 1

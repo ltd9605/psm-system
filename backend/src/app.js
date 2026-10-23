@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import pool from "./config/database.js";
-
+import cors from "cors";
 import authRoutes from "./auth/auth.routes.js";
 import productRoutes from "./product/product.routes.js";
 import customerRoutes from "./customer/customer.routes.js";
@@ -11,11 +11,18 @@ import orderRoutes from "./order/order.routes.js";
 import brandRoutes from "./brand/brand.routes.js";
 import { setupSwagger } from "./config/swagger.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
-
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 3000;
+// Cors configuration
+const corsOptions = {
+  origin: 'http://localhost:5500',
+  methods: ['GET', 'POST','PATCH', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
